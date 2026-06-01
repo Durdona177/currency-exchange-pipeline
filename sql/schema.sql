@@ -1,0 +1,2 @@
+USE CurrencyExchangeDB;
+GO
