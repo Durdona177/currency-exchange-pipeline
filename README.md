@@ -1,52 +1,102 @@
 # Currency Exchange Data Pipeline
 
-This project implements a Medallion Architecture pipeline:
+# Currency Exchange Data Pipeline
 
-- Bronze Layer (Raw API Data)
-- Silver Layer (Cleaned Exchange Rates)
-- Gold Layer (Aggregated Analytics)
+## Project Overview
 
-Data Source:
-Frankfurter API
+This project implements a Medallion Architecture data pipeline for currency exchange rates.
 
-Currencies:
-USD, UZS, RUB, EUR, GBP
+The pipeline extracts exchange rate data from the Frankfurt Exchange Rate API, stores raw data in a Bronze layer, transforms and cleans data in a Silver layer, and generates analytics in a Gold layer.
 
-Technology:
-- Python
-- SQL Server
-- SQLAlchemy
-- Pandas
-- APScheduler
+---
 
 ## Architecture
 
 ### Bronze Layer
-- Stores raw Frankfurter API responses
-- Immutable audit log
-- Data stored in raw_rates table
+Stores raw API responses as JSON.
+
+Table:
+- raw_rates
+
+Features:
+- Raw API storage
+- Incremental loading
+- Duplicate prevention
 
 ### Silver Layer
-- Parses JSON data
-- Validates exchange rates
-- Removes invalid records
-- Stores clean data in cleaned_rates table
+Transforms and cleans exchange rate data.
+
+Table:
+- cleaned_rates
+
+Features:
+- JSON parsing
+- Data type enforcement
+- Invalid value filtering
+- Deduplication
 
 ### Gold Layer
-- Creates business-ready analytical data
-- Calculates day-over-day percentage change
-- Calculates 7-day rolling average
-- Stores results in aggregated_rates table
+Stores aggregated analytics.
 
-## Technologies
+Table:
+- aggregated_rates
+
+Features:
+- Exchange rate trend analysis
+- Percentage change calculation
+- 7-day moving average
+
+---
+
+## Technologies Used
 
 - Python
 - SQL Server
 - SQLAlchemy
 - Pandas
-- Requests
 - APScheduler
 - Pytest
+- Git/GitHub
+
+---
+
+## Data Source
+
+Frankfurter API
+
+https://www.frankfurter.app
+
+Currencies processed:
+
+- USD
+- EUR
+- GBP
+- RUB
+- UZS
+
+---
+
+## Database Schema
+
+### Bronze
+
+```sql
+raw_rates
+```
+
+### Silver
+
+```sql
+cleaned_rates
+```
+
+### Gold
+
+```sql
+aggregated_rates
+```
+
+---
 
 ## Project Structure
 
@@ -58,8 +108,9 @@ currency-exchange-pipeline/
 │   ├── load_bronze.py
 │   ├── transform_silver.py
 │   ├── transform_gold.py
-│   ├── backfill.py
 │   ├── scheduler.py
+│   ├── backfill.py
+│   └── logger_config.py
 │
 ├── sql/
 │   └── schema.sql
@@ -68,78 +119,125 @@ currency-exchange-pipeline/
 │   └── test_extract.py
 │
 ├── logs/
+│   └── pipeline.log
 │
 ├── requirements.txt
-├── .env
+├── .gitignore
 └── README.md
 ```
 
+---
+
+## Setup
+
+Create virtual environment:
+
+```bash
+python -m venv venv
+```
+
+Activate environment:
+
+```bash
+venv\Scripts\activate
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
 ## Database Setup
 
-1. Open SQL Server Management Studio
-2. Run sql/schema.sql
-3. Verify tables:
+Run:
 
-- raw_rates
-- cleaned_rates
-- dim_currencies
-- dim_dates
-- aggregated_rates
-
-## Running The Pipeline
-
-Load raw data:
-
-```bash
-python pipeline/load_bronze.py
+```sql
+sql/schema.sql
 ```
 
-Create Silver layer:
+inside SQL Server Management Studio.
+
+---
+
+## Running the Pipeline
+
+### Extract and Load Bronze
 
 ```bash
-python pipeline/transform_silver.py
+python -m pipeline.load_bronze
 ```
 
-Create Gold layer:
+### Transform Silver
 
 ```bash
-python pipeline/transform_gold.py
+python -m pipeline.transform_silver
 ```
 
-## Historical Backfill
+### Build Gold Layer
 
 ```bash
-python pipeline/backfill.py
+python -m pipeline.transform_gold
 ```
 
-Loads historical exchange rate data.
+---
 
 ## Scheduler
 
+Run scheduled pipeline:
+
 ```bash
-python pipeline/scheduler.py
+python -m pipeline.scheduler
 ```
 
-Runs automatically every day at 08:00 Asia/Tashkent.
+The scheduler automatically executes the pipeline daily.
+
+---
+
+## Backfill
+
+Load historical data:
+
+```bash
+python -m pipeline.backfill
+```
+
+---
 
 ## Testing
 
+Run tests:
+
 ```bash
-python -m pytest
+pytest
 ```
 
-Current Result:
+Current test coverage includes:
+
+- API response validation
+
+---
+
+## Logging
+
+Pipeline activity is logged to:
 
 ```text
-1 passed
+logs/pipeline.log
 ```
+
+---
 
 ## Assumptions
 
-- USD is the default base currency
-- No intraday updates
-- Bronze layer is immutable
-- Frankfurter API is the source of truth
+- SQL Server is running locally.
+- ODBC Driver 17 for SQL Server is installed.
+- Internet access is available for API requests.
+- Currency rates are loaded once per day.
+
+---
 
 ## Author
 
