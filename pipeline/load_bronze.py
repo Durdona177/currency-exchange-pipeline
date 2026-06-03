@@ -1,8 +1,9 @@
 import json
 
 from sqlalchemy import create_engine
-from extract import get_latest_rates
-from logger_config import setup_logger
+from pipeline.extract import get_latest_rates
+from pipeline.logger_config import setup_logger
+
 
 logger = setup_logger()
 
@@ -22,7 +23,14 @@ def load_to_bronze(data):
 
     engine = get_engine()
 
-    query = """
+    check_query = """
+    SELECT COUNT(*)
+    FROM raw_rates
+    WHERE fetch_date = ?
+      AND base_currency = ?
+    """
+
+    insert_query = """
     INSERT INTO raw_rates
     (
         fetch_date,
@@ -42,7 +50,29 @@ def load_to_bronze(data):
         cursor = conn.cursor()
 
         cursor.execute(
-            query,
+            check_query,
+            (
+                data["date"],
+                data["base"]
+            )
+        )
+
+        existing_count = cursor.fetchone()[0]
+
+        if existing_count > 0:
+
+            logger.warning(
+                f"Data already exists for {data['date']}"
+            )
+
+            print(
+                f"Skipped duplicate load for {data['date']}"
+            )
+
+            return
+
+        cursor.execute(
+            insert_query,
             (
                 data["date"],
                 data["base"],
@@ -52,9 +82,8 @@ def load_to_bronze(data):
 
         conn.commit()
 
-
     logger.info(
-    f"Bronze loaded for {data['date']}"
+        f"Bronze loaded for {data['date']}"
     )
 
     print(
