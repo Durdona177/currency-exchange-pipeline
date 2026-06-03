@@ -50,12 +50,13 @@ def transform_to_silver():
 
     clean_df.drop_duplicates(inplace=True)
 
+
     clean_df.to_sql(
-        "cleaned_rates",
-        engine,
-        if_exists="append",
-        index=False
-    )
+    "cleaned_rates",
+    engine,
+    if_exists="replace",
+    index=False
+)
 
     print(f"{len(clean_df)} rows loaded into Silver")
 
