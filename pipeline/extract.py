@@ -1,5 +1,5 @@
 import requests
-from logger_config import setup_logger
+from pipeline.logger_config import setup_logger
 
 logger = setup_logger()
 
