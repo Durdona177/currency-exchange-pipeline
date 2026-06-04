@@ -232,10 +232,17 @@ logs/pipeline.log
 
 ## Assumptions
 
-- SQL Server is running locally.
-- ODBC Driver 17 for SQL Server is installed.
-- Internet access is available for API requests.
-- Currency rates are loaded once per day.
+The project is based on several assumptions.
+
+USD is used as the default base currency.
+
+Bronze data remains immutable.
+
+Exchange rates are loaded once per day.
+
+The Frankfurter API is treated as the source of truth.
+
+Missing or invalid exchange rates are filtered during Silver transformations.
 
 ---
 
